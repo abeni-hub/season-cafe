@@ -6,7 +6,7 @@ import { Field, Input, Textarea } from '@/components/ui/field';
 import { Modal } from '@/components/ui/modal';
 import { TableShell } from '@/components/ui/table';
 import { Pill } from '@/components/ui/badge';
-import { ProductArt } from '@/components/shared/ProductArt';
+import { ProductMedia } from '@/components/shared/ProductMedia';
 import { Money } from '@/components/shared/Money';
 import { useDb } from '@/hooks/useStore';
 import { useToast } from '@/components/ui/toast';
@@ -48,7 +48,15 @@ export function ProductsPage() {
     try {
       await updateProduct(product.id, { [key]: !product[key] });
       toast.success(
-        `${product.name} is now ${key === 'isPublished' ? (product.isPublished ? 'unpublished from' : 'published to') : product.isAvailable ? 'unavailable at' : 'available at'} the storefront.`,
+        `${product.name} is now ${
+          key === 'isPublished'
+            ? product.isPublished
+              ? 'unpublished from'
+              : 'published to'
+            : product.isAvailable
+              ? 'unavailable at'
+              : 'available at'
+        } the storefront.`,
       );
     } catch (error) {
       toast.error(error);
@@ -89,10 +97,16 @@ export function ProductsPage() {
               .slice()
               .sort((a, b) => a.sortOrder - b.sortOrder)
               .map((product) => (
-                <tr key={product.id} className="transition-colors hover:bg-paper/40">
+                <tr key={product.id} className="transition-colors hover:bg-paper/45">
                   <td className="td">
                     <div className="flex items-center gap-3">
-                      <ProductArt artIndex={product.artIndex} className="h-12 w-16 shrink-0 rounded-lg" />
+                      <ProductMedia
+                        slug={product.slug}
+                        artIndex={product.artIndex}
+                        name={product.name}
+                        sizes="72px"
+                        className="h-12 w-16 shrink-0 rounded-lg border border-line"
+                      />
                       <div>
                         <p className="font-semibold text-ink">{product.name}</p>
                         <p className="text-[11px] text-muted">/{product.slug}</p>
@@ -100,16 +114,26 @@ export function ProductsPage() {
                     </div>
                   </td>
                   <td className="td max-w-[260px] text-xs text-muted">{product.tagline}</td>
-                  <td className="td text-right font-medium"><Money cents={product.priceCents} /></td>
+                  <td className="td text-right font-medium tabular-nums">
+                    <Money cents={product.priceCents} />
+                  </td>
                   <td className="td text-center">
-                    <button type="button" onClick={() => toggle(product, 'isPublished')} aria-label="Toggle publication">
+                    <button
+                      type="button"
+                      onClick={() => void toggle(product, 'isPublished')}
+                      aria-label="Toggle publication"
+                    >
                       <Pill tone={product.isPublished ? 'green' : 'neutral'} className="cursor-pointer">
                         {product.isPublished ? 'Live' : 'Hidden'}
                       </Pill>
                     </button>
                   </td>
                   <td className="td text-center">
-                    <button type="button" onClick={() => toggle(product, 'isAvailable')} aria-label="Toggle availability">
+                    <button
+                      type="button"
+                      onClick={() => void toggle(product, 'isAvailable')}
+                      aria-label="Toggle availability"
+                    >
                       <Pill tone={product.isAvailable ? 'blue' : 'amber'} className="cursor-pointer">
                         {product.isAvailable ? 'Selling' : 'Paused'}
                       </Pill>
@@ -127,8 +151,8 @@ export function ProductsPage() {
       </TableShell>
 
       <p className="mt-4 text-[11px] leading-relaxed text-muted">
-        Website cards are generated from this data. Images are illustrative demo artwork — the business can
-        replace descriptions, pricing and availability, and the storefront reflects it immediately.
+        Public storefront cards and POS tiles pull pricing, descriptions and availability directly from this
+        catalogue.
       </p>
 
       <Modal
@@ -138,22 +162,56 @@ export function ProductsPage() {
         description="This content appears on the public product page."
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
-            <Button onClick={save}>Save changes</Button>
+            <Button variant="ghost" onClick={() => setEditing(null)}>
+              Cancel
+            </Button>
+            <Button onClick={() => void save()}>Save changes</Button>
           </div>
         }
       >
-        <div className="space-y-3">
-          <Field label="Tagline" htmlFor="product-tagline">
-            <Input id="product-tagline" value={form.tagline} onChange={(e) => setForm((current) => ({ ...current, tagline: e.target.value }))} />
-          </Field>
-          <Field label="Description" htmlFor="product-description">
-            <Textarea id="product-description" value={form.description} onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))} />
-          </Field>
-          <Field label="Regular price" htmlFor="product-price" hint="Shown in the working currency; stored as integer minor units.">
-            <Input id="product-price" inputMode="decimal" value={form.price} onChange={(e) => setForm((current) => ({ ...current, price: e.target.value }))} />
-          </Field>
-        </div>
+        {editing && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 rounded-2xl border border-line bg-paper/50 p-3">
+              <ProductMedia
+                slug={editing.slug}
+                artIndex={editing.artIndex}
+                name={editing.name}
+                sizes="96px"
+                className="h-16 w-24 shrink-0 rounded-xl border border-line"
+              />
+              <div>
+                <p className="font-display text-lg text-forest-deep">{editing.name}</p>
+                <p className="text-xs text-muted">/{editing.slug}</p>
+              </div>
+            </div>
+            <Field label="Tagline" htmlFor="product-tagline">
+              <Input
+                id="product-tagline"
+                value={form.tagline}
+                onChange={(e) => setForm((current) => ({ ...current, tagline: e.target.value }))}
+              />
+            </Field>
+            <Field label="Description" htmlFor="product-description">
+              <Textarea
+                id="product-description"
+                value={form.description}
+                onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))}
+              />
+            </Field>
+            <Field
+              label="Regular price"
+              htmlFor="product-price"
+              hint="Shown in the working currency; stored as integer minor units."
+            >
+              <Input
+                id="product-price"
+                inputMode="decimal"
+                value={form.price}
+                onChange={(e) => setForm((current) => ({ ...current, price: e.target.value }))}
+              />
+            </Field>
+          </div>
+        )}
       </Modal>
     </div>
   );

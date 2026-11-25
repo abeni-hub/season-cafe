@@ -6,6 +6,7 @@ import { Field, Input, Select, Textarea } from '@/components/ui/field';
 import { Modal } from '@/components/ui/modal';
 import { TableShell } from '@/components/ui/table';
 import { BatchStatusPill } from '@/components/shared/StatusPills';
+import { ProductMedia } from '@/components/shared/ProductMedia';
 import { useDb, usePermission } from '@/hooks/useStore';
 import { useToast } from '@/components/ui/toast';
 import {
@@ -161,15 +162,28 @@ export function ProductionPage() {
               const shortages = availability.filter((entry) => entry.short);
               const next = BATCH_FLOW[batch.status];
               return (
-                <tr key={batch.id}>
+                <tr key={batch.id} className="transition-colors hover:bg-paper/45">
                   <td className="td">
                     <p className="font-medium text-ink">{batch.code}</p>
                     <p className="text-[11px] text-muted">{batch.title}</p>
                     {employee && <p className="text-[11px] text-muted">{employee.name}</p>}
                   </td>
                   <td className="td text-xs">
-                    {product ? product.name : 'Custom work'}
-                    <span className="block text-muted">{quantity(batch.quantity)} units</span>
+                    <div className="flex items-center gap-2.5">
+                      {product && (
+                        <ProductMedia
+                          slug={product.slug}
+                          artIndex={product.artIndex}
+                          name={product.name}
+                          sizes="40px"
+                          className="h-8 w-10 shrink-0 rounded-md border border-line"
+                        />
+                      )}
+                      <div>
+                        <span>{product ? product.name : 'Custom work'}</span>
+                        <span className="block text-muted tabular-nums">{quantity(batch.quantity)} units</span>
+                      </div>
+                    </div>
                   </td>
                   <td className="td text-xs">{batch.location === 'cafe' ? 'Café' : 'Home Bakery'}</td>
                   <td className="td text-xs">

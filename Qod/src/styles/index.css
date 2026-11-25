@@ -5,10 +5,12 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
     @apply bg-paper text-ink font-sans antialiased;
+    overflow-x: clip;
   }
 
   h1,
@@ -19,16 +21,30 @@
   }
 
   ::selection {
-    @apply bg-forest/20;
+    @apply bg-forest/20 text-forest-deep;
   }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-forest/40 ring-offset-2 ring-offset-cream;
+    @apply outline-none ring-2 ring-forest/50 ring-offset-2 ring-offset-cream;
   }
 
   input[type='date']::-webkit-calendar-picker-indicator {
-    opacity: 0.5;
+    opacity: 0.55;
     cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
@@ -46,15 +62,15 @@
   }
 
   .input {
-    @apply w-full rounded-xl border border-line bg-white/80 px-3.5 py-2.5 text-sm text-ink shadow-sm placeholder:text-muted/60 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest/15 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply w-full rounded-xl border border-line bg-white/85 px-3.5 py-2.5 text-sm text-ink shadow-[0_1px_2px_rgba(38,37,31,0.03)] transition-colors placeholder:text-muted/60 focus:border-forest focus:bg-white focus:outline-none focus:ring-2 focus:ring-forest/15 disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .table-base {
-    @apply w-full text-left text-sm;
+    @apply w-full text-left text-sm tabular-nums;
   }
 
   .th {
-    @apply whitespace-nowrap border-b border-line bg-paper/60 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-muted;
+    @apply whitespace-nowrap border-b border-line bg-paper-deep/55 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-muted;
   }
 
   .td {
@@ -65,17 +81,25 @@
     @apply rounded-2xl border border-line bg-cream shadow-[0_1px_0_rgba(38,37,31,0.03)];
   }
 
+  .card-editorial {
+    @apply rounded-2xl border border-line/90 bg-cream shadow-[0_14px_34px_-24px_rgba(41,61,34,0.22)];
+  }
+
   .link-underline {
-    @apply relative inline-flex items-center gap-1.5 text-sm font-semibold text-forest after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-clay after:transition-transform hover:after:scale-x-100;
+    @apply relative inline-flex items-center gap-1.5 text-sm font-semibold text-forest after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-clay after:transition-transform after:duration-300 hover:after:scale-x-100;
   }
 }
 
 @layer utilities {
   .botanical-paper {
     background-image:
-      radial-gradient(circle at 6% 12%, rgba(176, 85, 47, 0.07), transparent 30%),
-      radial-gradient(circle at 94% 4%, rgba(63, 92, 53, 0.09), transparent 32%),
-      radial-gradient(circle at 72% 96%, rgba(211, 202, 181, 0.3), transparent 38%);
+      radial-gradient(circle at 6% 12%, rgba(176, 85, 47, 0.065), transparent 32%),
+      radial-gradient(circle at 94% 4%, rgba(63, 92, 53, 0.085), transparent 34%),
+      radial-gradient(circle at 72% 96%, rgba(211, 202, 181, 0.28), transparent 40%);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 
   .text-balance {

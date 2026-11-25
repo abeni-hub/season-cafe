@@ -26,7 +26,7 @@ export function Logo({ to = '/', invert = false, compact = false, className }: L
         <span
           className={cn(
             'text-[8px] font-semibold uppercase tracking-[0.42em]',
-            invert ? 'text-cream/60' : 'text-ink-soft/60',
+            invert ? 'text-cream/75' : 'text-ink-soft/75',
           )}
         >
           Delicious &amp; Fresh

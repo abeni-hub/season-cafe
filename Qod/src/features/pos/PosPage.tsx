@@ -15,10 +15,10 @@ import { Button } from '@/components/ui/button';
 import { Field, Input, Select } from '@/components/ui/field';
 import { Modal } from '@/components/ui/modal';
 import { TableShell } from '@/components/ui/table';
-import { ProductArt } from '@/components/shared/ProductArt';
+import { ProductMedia } from '@/components/shared/ProductMedia';
 import { Money } from '@/components/shared/Money';
 import { useDb } from '@/hooks/useStore';
-import { HAS_REMOTE_API } from '@/config/brand';
+import { BRAND, HAS_REMOTE_API } from '@/config/brand';
 import { useToast } from '@/components/ui/toast';
 import {
   availableProductStock,
@@ -45,7 +45,9 @@ export function PosPage() {
   const db = useDb();
   const toast = useToast();
   const customers = listCustomers();
-  const products = db.products.filter((product) => product.isAvailable);
+  const products = db.products
+    .filter((product) => product.isAvailable)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
   const walkIn = walkInCustomer();
   const [location, setLocation] = useState<LocationId>('cafe');
   const [cart, setCart] = useState<Record<string, number>>({});
@@ -132,7 +134,7 @@ export function PosPage() {
         title="Counter sales"
         description="Regular products only. A completed sale records payment and deducts finished goods once, at the selected location."
         actions={
-          <div className="flex rounded-xl border border-line bg-cream p-1">
+          <div className="flex rounded-xl border border-line bg-cream p-1" role="group" aria-label="Counter location">
             {db.settings.locations.map((loc) => (
               <button
                 key={loc.id}
@@ -142,7 +144,7 @@ export function PosPage() {
                   setCart({});
                 }}
                 className={cn(
-                  'rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors',
+                  'rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors',
                   location === loc.id ? 'bg-forest text-cream' : 'text-muted hover:text-ink',
                 )}
               >
@@ -155,7 +157,7 @@ export function PosPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.65fr_1fr]">
         <section>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => {
               const stock = availableProductStock(product.id, location);
               const inCart = cart[product.id] ?? 0;
@@ -167,26 +169,42 @@ export function PosPage() {
                   onClick={() => add(product.id)}
                   disabled={disabled}
                   className={cn(
-                    'group relative overflow-hidden rounded-2xl border border-line bg-cream text-left transition-all',
-                    disabled ? 'cursor-not-allowed opacity-60' : 'hover:-translate-y-0.5 hover:shadow-soft',
+                    'group relative overflow-hidden rounded-2xl border bg-cream text-left transition-colors',
+                    inCart > 0 ? 'border-forest ring-2 ring-forest/20' : 'border-line',
+                    disabled ? 'cursor-not-allowed opacity-55' : 'hover:border-forest/40',
                   )}
                 >
-                  <ProductArt artIndex={product.artIndex} className="aspect-[16/10] w-full" />
-                  {inCart > 0 && (
-                    <span className="absolute right-2.5 top-2.5 flex h-6 min-w-6 items-center justify-center rounded-full bg-forest px-1.5 text-xs font-bold text-cream">
-                      {inCart}
+                  <div className="relative">
+                    <ProductMedia
+                      slug={product.slug}
+                      artIndex={product.artIndex}
+                      name={product.name}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1280px) 33vw, 22vw"
+                      className="aspect-[16/10] w-full"
+                    />
+                    {inCart > 0 && (
+                      <span className="absolute right-2.5 top-2.5 flex h-6 min-w-6 items-center justify-center rounded-full bg-forest px-1.5 text-xs font-bold text-cream shadow-sm tabular-nums">
+                        {inCart}
+                      </span>
+                    )}
+                    <span
+                      className={cn(
+                        'absolute bottom-2 left-2.5 rounded-full px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm tabular-nums',
+                        stock <= 0
+                          ? 'bg-[#8d2f24]/90 text-white'
+                          : 'bg-ink/70 text-cream',
+                      )}
+                    >
+                      {stock <= 0 ? 'Out of stock' : `${stock} available`}
                     </span>
-                  )}
+                  </div>
                   <div className="p-3.5">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-semibold leading-snug text-ink">{product.name}</p>
-                      <p className="whitespace-nowrap text-xs font-semibold text-clay">
+                      <p className="whitespace-nowrap text-xs font-semibold text-clay tabular-nums">
                         <Money cents={product.priceCents} />
                       </p>
                     </div>
-                    <p className={cn('mt-1.5 text-[10px] font-medium', stock <= 0 ? 'text-[#8d2f24]' : 'text-muted')}>
-                      {stock <= 0 ? 'Out of stock here' : `${stock} in stock at ${location === 'cafe' ? 'Café' : 'Home Bakery'}`}
-                    </p>
                   </div>
                 </button>
               );
@@ -214,7 +232,7 @@ export function PosPage() {
                     const payment = listOrderPayments(order.id).find((entry) => entry.kind === 'payment');
                     const units = order.items.reduce((sum, line) => sum + line.quantity, 0);
                     return (
-                      <tr key={order.id}>
+                      <tr key={order.id} className="transition-colors hover:bg-paper/45">
                         <td className="td">
                           <p className="font-semibold text-forest">{order.code}</p>
                           <p className="text-[11px] text-muted">{formatDateTime(order.createdAt)}</p>
@@ -222,8 +240,13 @@ export function PosPage() {
                         <td className="td">{customerName(order.customerId)}</td>
                         <td className="td">{units}</td>
                         <td className="td capitalize">{payment?.method ?? '—'}</td>
-                        <td className="td text-right font-medium">
-                          <Money cents={order.items.reduce((sum, line) => sum + line.quantity * line.unitPriceCents, 0)} />
+                        <td className="td text-right font-medium tabular-nums">
+                          <Money
+                            cents={order.items.reduce(
+                              (sum, line) => sum + line.quantity * line.unitPriceCents,
+                              0,
+                            )}
+                          />
                         </td>
                       </tr>
                     );
@@ -237,13 +260,16 @@ export function PosPage() {
         <aside className="xl:sticky xl:top-24 xl:self-start">
           <div className="card overflow-hidden">
             <div className="border-b border-line bg-forest-deep px-5 py-4 text-cream">
-              <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-cream/60">
+              <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-cream/65">
                 <ReceiptText className="h-3.5 w-3.5" /> Current sale
               </p>
-              <p className="mt-1 font-display text-2xl text-cream">
+              <p className="mt-1 font-display text-2xl text-cream tabular-nums">
                 <Money cents={totalCents} />
               </p>
-              <p className="text-[11px] text-cream/50">{itemCount} item{itemCount === 1 ? '' : 's'} · {location === 'cafe' ? 'Café' : 'Home Bakery'}</p>
+              <p className="text-[11px] text-cream/55">
+                {itemCount} item{itemCount === 1 ? '' : 's'} ·{' '}
+                {location === 'cafe' ? 'Café' : 'Home Bakery'}
+              </p>
             </div>
             <div className="space-y-4 p-5">
               <Field label="Customer" htmlFor="pos-customer">
@@ -251,14 +277,26 @@ export function PosPage() {
                   <option value={walkIn?.id ?? ''}>Walk-in customer</option>
                   {customers.map((customer) => (
                     <option key={customer.id} value={customer.id}>
-                      {customer.name}{customer.organization ? ` — ${customer.organization}` : ''}
+                      {customer.name}
+                      {customer.organization ? ` — ${customer.organization}` : ''}
                     </option>
                   ))}
                 </Select>
               </Field>
 
               <div>
-                <p className="field-label">Cart</p>
+                <div className="flex items-center justify-between">
+                  <p className="field-label">Cart</p>
+                  {lines.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setCart({})}
+                      className="mb-1.5 text-[11px] font-semibold text-muted hover:text-[#8d2f24]"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
                 {lines.length === 0 ? (
                   <p className="rounded-xl border border-dashed border-line bg-paper/50 px-3.5 py-6 text-center text-xs text-muted">
                     Select a product to start the sale.
@@ -269,7 +307,7 @@ export function PosPage() {
                       <li key={line.product.id} className="flex items-center gap-2 py-2.5">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium text-ink">{line.product.name}</p>
-                          <p className="text-[11px] text-muted">
+                          <p className="text-[11px] text-muted tabular-nums">
                             <Money cents={line.product.priceCents} /> each
                           </p>
                         </div>
@@ -282,7 +320,9 @@ export function PosPage() {
                           >
                             <Minus className="h-3 w-3" />
                           </button>
-                          <span className="w-6 text-center text-xs font-semibold">{line.quantity}</span>
+                          <span className="w-6 text-center text-xs font-semibold tabular-nums">
+                            {line.quantity}
+                          </span>
                           <button
                             type="button"
                             onClick={() => setQuantity(line.product.id, line.quantity + 1)}
@@ -330,7 +370,11 @@ export function PosPage() {
               </div>
 
               {method === 'cash' && (
-                <Field label="Amount tendered (optional)" htmlFor="tendered" error={tenderedShort ? 'Less than the total due.' : undefined}>
+                <Field
+                  label="Amount tendered (optional)"
+                  htmlFor="tendered"
+                  error={tenderedShort ? 'Less than the total due.' : undefined}
+                >
                   <Input
                     id="tendered"
                     inputMode="decimal"
@@ -339,7 +383,7 @@ export function PosPage() {
                     onChange={(e) => setTendered(e.target.value)}
                   />
                   {!tenderedShort && Number.isFinite(tenderedCents) && tenderedCents >= totalCents && (
-                    <p className="text-xs font-medium text-forest">
+                    <p className="text-xs font-medium text-forest tabular-nums">
                       Change due {formatCents(changeCents, db.settings.currency)}
                     </p>
                   )}
@@ -351,8 +395,19 @@ export function PosPage() {
                 deducted twice for this order.
               </div>
 
-              <Button className="w-full" size="lg" onClick={() => void completeSale()} disabled={!lines.length || submitting}>
-                {submitting ? 'Recording sale…' : <>Complete sale · <Money cents={totalCents} /></>}
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={() => void completeSale()}
+                disabled={!lines.length || submitting}
+              >
+                {submitting ? (
+                  'Recording sale…'
+                ) : (
+                  <>
+                    Complete sale · <Money cents={totalCents} />
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -378,19 +433,30 @@ export function PosPage() {
       >
         {receipt && (
           <div className="space-y-4 text-sm">
-            <div className="flex items-center justify-between border-b border-dashed border-line pb-3">
-              <div>
-                <p className="font-script text-2xl text-forest-deep">Seasons cake</p>
-                <p className="text-[10px] uppercase tracking-[0.18em] text-muted">
-                  {receipt.order.location === 'cafe' ? 'Café counter' : 'Home Bakery'} · {formatDateTime(receipt.order.createdAt)}
-                </p>
+            <div className="flex items-center justify-between gap-3 border-b border-dashed border-line pb-3">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src={BRAND.logoPath}
+                  alt="Seasons Cake"
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 rounded-lg border border-line object-cover"
+                />
+                <div>
+                  <p className="font-script text-xl leading-none text-forest-deep">Seasons cake</p>
+                  <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-muted">
+                    {receipt.order.location === 'cafe' ? 'Café counter' : 'Home Bakery'} ·{' '}
+                    {formatDateTime(receipt.order.createdAt)}
+                  </p>
+                </div>
               </div>
               <p className="text-right text-xs text-muted">
-                Customer<br />
+                Customer
+                <br />
                 <span className="font-medium text-ink">{customerName(receipt.order.customerId)}</span>
               </p>
             </div>
-            <ul className="space-y-1.5">
+            <ul className="space-y-1.5 tabular-nums">
               {receipt.order.items.map((line) => (
                 <li key={line.id} className="flex items-center justify-between gap-2">
                   <span className="text-ink-soft">
@@ -400,7 +466,7 @@ export function PosPage() {
                 </li>
               ))}
             </ul>
-            <div className="flex items-center justify-between border-t border-line pt-3 font-display text-lg text-forest-deep">
+            <div className="flex items-center justify-between border-t border-line pt-3 font-display text-lg text-forest-deep tabular-nums">
               <span>Total paid</span>
               <Money cents={receipt.payment.amountCents} />
             </div>

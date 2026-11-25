@@ -14,7 +14,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ eyebrow, title, description, actions, backTo, backLabel }: PageHeaderProps) {
   return (
-    <div className="mb-7">
+    <div className="mb-7 border-b border-line/70 pb-5">
       {backTo && (
         <Link
           to={backTo}
@@ -26,7 +26,7 @@ export function PageHeader({ eyebrow, title, description, actions, backTo, backL
       )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
+          {eyebrow && <p className="eyebrow mb-1.5">{eyebrow}</p>}
           <h1 className="text-balance text-3xl text-forest-deep sm:text-[2rem]">{title}</h1>
           {description && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{description}</p>}
         </div>
@@ -53,12 +53,12 @@ const toneClasses = {
 
 export function StatCard({ label, value, hint, icon, tone = 'forest' }: StatCardProps) {
   return (
-    <div className="card p-5">
+    <div className="card p-5 transition-colors hover:border-beige">
       <div className="flex items-start justify-between gap-3">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">{label}</p>
         {icon && <span className={cn('rounded-lg p-1.5', toneClasses[tone])}>{icon}</span>}
       </div>
-      <p className="mt-3 font-display text-2xl text-forest-deep">{value}</p>
+      <p className="mt-3 font-display text-2xl text-forest-deep tabular-nums">{value}</p>
       {hint && <p className="mt-1.5 text-xs text-muted">{hint}</p>}
     </div>
   );
@@ -73,9 +73,19 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
   );
 }
 
-export function EmptyState({ icon, title, description, action }: { icon?: ReactNode; title: string; description?: string; action?: ReactNode }) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+}: {
+  icon?: ReactNode;
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line bg-paper/40 px-6 py-12 text-center">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line bg-paper/45 px-6 py-12 text-center">
       {icon && <div className="rounded-full bg-paper-deep p-3 text-muted">{icon}</div>}
       <div>
         <p className="font-display text-lg text-ink">{title}</p>

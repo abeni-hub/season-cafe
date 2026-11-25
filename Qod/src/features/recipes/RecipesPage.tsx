@@ -6,6 +6,7 @@ import { Field, Input, Select, Textarea } from '@/components/ui/field';
 import { Modal } from '@/components/ui/modal';
 import { TableShell } from '@/components/ui/table';
 import { Pill } from '@/components/ui/badge';
+import { ProductMedia } from '@/components/shared/ProductMedia';
 import { Money } from '@/components/shared/Money';
 import { useDb, usePermission } from '@/hooks/useStore';
 import { useToast } from '@/components/ui/toast';
@@ -121,12 +122,23 @@ export function RecipesPage() {
               const recipe = recipeForProduct(product.id);
               const cost = recipe ? calculateRecipeCost(recipe) : null;
               return (
-                <tr key={product.id}>
+                <tr key={product.id} className="transition-colors hover:bg-paper/45">
                   <td className="td">
-                    <p className="font-medium text-ink">{product.name}</p>
-                    <p className="text-[11px] text-muted">
-                      {recipe ? `${recipe.lines.length} line(s)` : 'No recipe yet'}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <ProductMedia
+                        slug={product.slug}
+                        artIndex={product.artIndex}
+                        name={product.name}
+                        sizes="48px"
+                        className="h-9 w-12 shrink-0 rounded-lg border border-line"
+                      />
+                      <div>
+                        <p className="font-medium text-ink">{product.name}</p>
+                        <p className="text-[11px] text-muted">
+                          {recipe ? `${recipe.lines.length} line(s)` : 'No recipe yet'}
+                        </p>
+                      </div>
+                    </div>
                   </td>
                   <td className="td text-right text-xs">{recipe ? recipe.yieldQuantity : '—'}</td>
                   <td className="td text-right text-xs">{cost ? <Money cents={cost.ingredientCents} /> : '—'}</td>

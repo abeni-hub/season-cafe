@@ -5,12 +5,12 @@ type Variant = 'primary' | 'accent' | 'outline' | 'ghost' | 'danger' | 'subtle';
 type Size = 'sm' | 'md' | 'lg';
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-150 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100';
 
 const variants: Record<Variant, string> = {
   primary: 'bg-forest text-cream hover:bg-forest-deep shadow-sm',
   accent: 'bg-clay text-cream hover:bg-clay-deep shadow-sm',
-  outline: 'border border-forest/30 bg-transparent text-forest hover:bg-forest-wash',
+  outline: 'border border-forest/30 bg-transparent text-forest hover:bg-forest-wash/75',
   ghost: 'text-ink-soft hover:bg-paper-deep',
   danger: 'bg-[#8d2f24] text-white hover:bg-[#712419]',
   subtle: 'bg-paper-deep text-ink hover:bg-line',

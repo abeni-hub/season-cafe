@@ -242,7 +242,7 @@ export function InventoryPage() {
               {movements.map((movement) => {
                 const item = db.inventoryItems.find((entry) => entry.id === movement.itemId);
                 return (
-                  <tr key={movement.id}>
+                  <tr key={movement.id} className="transition-colors hover:bg-paper/45">
                     <td className="td whitespace-nowrap text-xs">{formatDateTime(movement.createdAt)}</td>
                     <td className="td text-xs font-medium text-ink">{item?.name ?? 'Unknown'}</td>
                     <td className="td text-xs">{movement.location === 'cafe' ? 'Café' : 'Home Bakery'}</td>

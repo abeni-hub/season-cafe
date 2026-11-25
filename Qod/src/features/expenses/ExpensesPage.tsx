@@ -108,7 +108,7 @@ export function ExpensesPage() {
           </thead>
           <tbody>
             {expenses.map((expense) => (
-              <tr key={expense.id}>
+              <tr key={expense.id} className="transition-colors hover:bg-paper/45">
                 <td className="td text-xs">{formatDate(expense.incurredAt)}</td>
                 <td className="td"><Pill tone={categoryTones[expense.category]}>{expense.category}</Pill></td>
                 <td className="td text-xs">{expense.location === 'cafe' ? 'Café' : 'Home Bakery'}</td>

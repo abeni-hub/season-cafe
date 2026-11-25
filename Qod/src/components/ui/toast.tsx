@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { AlertTriangle, CheckCircle2, Info, X } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { errorMessage } from '@/services/errors';
+import { toastVariants } from '@/lib/motion';
 
 type ToastTone = 'success' | 'error' | 'info';
 
@@ -59,25 +61,40 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="pointer-events-none fixed inset-x-4 bottom-4 z-[60] flex flex-col items-center gap-2 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:items-end">
-        {items.map((item) => {
-          const Icon = icons[item.tone];
-          return (
-            <div
-              key={item.id}
-              className={cn(
-                'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border px-4 py-3 shadow-soft animate-fade-up',
-                toneStyles[item.tone],
-              )}
-            >
-              <Icon className="mt-0.5 h-4 w-4 shrink-0" />
-              <p className="flex-1 text-sm font-medium leading-snug">{item.message}</p>
-              <button type="button" onClick={() => remove(item.id)} aria-label="Dismiss" className="opacity-60 hover:opacity-100">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          );
-        })}
+      <div
+        aria-live="polite"
+        className="pointer-events-none fixed inset-x-4 bottom-4 z-[60] flex flex-col items-center gap-2 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:items-end"
+      >
+        <AnimatePresence initial={false}>
+          {items.map((item) => {
+            const Icon = icons[item.tone];
+            return (
+              <motion.div
+                key={item.id}
+                layout
+                variants={toastVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className={cn(
+                  'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border px-4 py-3 shadow-soft',
+                  toneStyles[item.tone],
+                )}
+              >
+                <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+                <p className="flex-1 text-sm font-medium leading-snug">{item.message}</p>
+                <button
+                  type="button"
+                  onClick={() => remove(item.id)}
+                  aria-label="Dismiss"
+                  className="rounded p-0.5 opacity-60 transition-opacity hover:opacity-100"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
     </ToastContext.Provider>
   );

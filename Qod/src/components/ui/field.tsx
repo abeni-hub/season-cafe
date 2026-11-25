@@ -1,5 +1,8 @@
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { formFeedbackVariants } from '@/lib/motion';
 
 interface FieldProps {
   label?: string;
@@ -20,7 +23,21 @@ export function Field({ label, htmlFor, hint, error, children, className }: Fiel
       )}
       {children}
       {hint && !error && <p className="text-xs text-muted">{hint}</p>}
-      {error && <p className="text-xs font-medium text-[#8d2f24]">{error}</p>}
+      <AnimatePresence initial={false}>
+        {error && (
+          <motion.p
+            key={error}
+            role="alert"
+            variants={formFeedbackVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="overflow-hidden text-xs font-medium text-[#8d2f24]"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -31,9 +48,15 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
 
 export function Select({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select className={cn('input appearance-none', className)} {...props}>
-      {children}
-    </select>
+    <div className="relative">
+      <select className={cn('input appearance-none pr-9', className)} {...props}>
+        {children}
+      </select>
+      <ChevronDown
+        aria-hidden="true"
+        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+      />
+    </div>
   );
 }
 
@@ -50,7 +73,7 @@ interface CheckboxProps {
 
 export function Checkbox({ label, checked, onChange, hint }: CheckboxProps) {
   return (
-    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-line bg-white/60 px-3.5 py-3">
+    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-line bg-white/60 px-3.5 py-3 transition-colors hover:border-forest/30">
       <input
         type="checkbox"
         checked={checked}

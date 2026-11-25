@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page';
+import { Plus, Search, ClipboardList } from 'lucide-react';
+import { EmptyState, PageHeader } from '@/components/ui/page';
 import { Button, buttonClasses } from '@/components/ui/button';
 import { Field, Input, Select } from '@/components/ui/field';
 import { TableShell } from '@/components/ui/table';
@@ -108,10 +108,11 @@ export function OrdersPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line bg-paper/40 px-6 py-12 text-center">
-          <p className="font-display text-lg text-ink">No orders match these filters.</p>
-          <p className="mt-1 text-sm text-muted">Adjust the filters or record a new order.</p>
-        </div>
+        <EmptyState
+          icon={<ClipboardList className="h-5 w-5" />}
+          title="No orders match these filters."
+          description="Adjust the search or status filters, or record a new order."
+        />
       ) : (
         <TableShell>
           <table className="table-base">

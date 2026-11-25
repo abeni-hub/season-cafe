@@ -55,35 +55,37 @@ function LineEditor({
   return (
     <div className="space-y-2">
       {lines.map((line, index) => (
-        <div key={index} className="grid grid-cols-[1fr_64px_96px_32px] items-start gap-2">
+        <div key={index} className="grid grid-cols-1 gap-2 rounded-xl border border-line/70 bg-paper/35 p-2.5 sm:grid-cols-[1fr_72px_104px_32px] sm:items-start sm:border-0 sm:bg-transparent sm:p-0">
           <Input
             aria-label={`Line ${index + 1} description`}
             placeholder="Description or item"
             value={line.description}
             onChange={(e) => update(index, { description: e.target.value })}
           />
-          <Input
-            aria-label={`Line ${index + 1} quantity`}
-            inputMode="numeric"
-            placeholder="Qty"
-            value={line.quantity}
-            onChange={(e) => update(index, { quantity: e.target.value })}
-          />
-          <Input
-            aria-label={`Line ${index + 1} unit price`}
-            inputMode="decimal"
-            placeholder="Unit price"
-            value={line.price}
-            onChange={(e) => update(index, { price: e.target.value })}
-          />
-          <button
-            type="button"
-            onClick={() => setLines((current) => (current.length > 1 ? current.filter((_, i) => i !== index) : current))}
-            className="mt-2 rounded-lg p-1 text-muted hover:text-[#8d2f24]"
-            aria-label="Remove line"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          <div className="grid grid-cols-[1fr_1fr_32px] gap-2 sm:contents">
+            <Input
+              aria-label={`Line ${index + 1} quantity`}
+              inputMode="numeric"
+              placeholder="Qty"
+              value={line.quantity}
+              onChange={(e) => update(index, { quantity: e.target.value })}
+            />
+            <Input
+              aria-label={`Line ${index + 1} unit price`}
+              inputMode="decimal"
+              placeholder="Unit price"
+              value={line.price}
+              onChange={(e) => update(index, { price: e.target.value })}
+            />
+            <button
+              type="button"
+              onClick={() => setLines((current) => (current.length > 1 ? current.filter((_, i) => i !== index) : current))}
+              className="mt-2 rounded-lg p-1 text-muted hover:text-[#8d2f24]"
+              aria-label="Remove line"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       ))}
       <button

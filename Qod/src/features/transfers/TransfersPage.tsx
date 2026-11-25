@@ -128,7 +128,7 @@ export function TransfersPage() {
           </thead>
           <tbody>
             {transfers.map((transfer) => (
-              <tr key={transfer.id}>
+              <tr key={transfer.id} className="transition-colors hover:bg-paper/45">
                 <td className="td font-medium text-ink">{transfer.code}</td>
                 <td className="td text-xs">
                   {locationName(transfer.from)} → {locationName(transfer.to)}

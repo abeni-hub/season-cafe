@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Sparkles } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page';
+import { EmptyState, PageHeader } from '@/components/ui/page';
 import { Button, buttonClasses } from '@/components/ui/button';
 import { Tabs, TableShell } from '@/components/ui/table';
 import { OrderStatusPill } from '@/components/shared/StatusPills';
@@ -81,13 +81,11 @@ export function CustomOrdersPage() {
       />
 
       {visible.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line bg-paper/40 px-6 py-14 text-center">
-          <Sparkles className="mx-auto h-6 w-6 text-muted" />
-          <p className="mt-3 font-display text-lg text-ink">No orders in this view.</p>
-          <p className="mt-1 text-sm text-muted">
-            Website enquiries appear here automatically. Create a custom order to start a quotation.
-          </p>
-        </div>
+        <EmptyState
+          icon={<Sparkles className="h-5 w-5" />}
+          title="No orders in this view."
+          description="Website enquiries appear here automatically. Create a custom order to start a quotation."
+        />
       ) : (
         <TableShell>
           <table className="table-base">

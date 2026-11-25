@@ -155,8 +155,7 @@ export function WebsiteCmsPage() {
               ))}
             </div>
             <p className="text-[11px] text-muted">
-              Gallery tiles use labelled placeholder artwork rather than unverified photographs. Replace the
-              images once the business supplies approved photography.
+              Captions pair directly with the curated patisserie photography displayed on the public gallery page.
             </p>
             <div className="flex justify-end">
               <Button onClick={saveContent}>Save website content</Button>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Search, Users } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page';
+import { EmptyState, PageHeader } from '@/components/ui/page';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Select, Textarea } from '@/components/ui/field';
 import { Modal } from '@/components/ui/modal';
@@ -125,11 +125,11 @@ export function CustomersPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line bg-paper/40 px-6 py-14 text-center">
-          <Users className="mx-auto h-6 w-6 text-muted" />
-          <p className="mt-3 font-display text-lg text-ink">No customers yet</p>
-          <p className="mt-1 text-sm text-muted">Create an individual or organisation to begin.</p>
-        </div>
+        <EmptyState
+          icon={<Users className="h-5 w-5" />}
+          title="No customers yet"
+          description="Create an individual or organisation profile to track orders and balances."
+        />
       ) : (
         <TableShell>
           <table className="table-base">

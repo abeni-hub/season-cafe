@@ -106,7 +106,7 @@ export function EmployeesPage() {
           </thead>
           <tbody>
             {employees.map((employee) => (
-              <tr key={employee.id}>
+              <tr key={employee.id} className="transition-colors hover:bg-paper/45">
                 <td className="td">
                   <p className="font-medium text-ink">{employee.name}</p>
                   {session?.employeeId === employee.id && <p className="text-[10px] uppercase tracking-wide text-clay">You</p>}

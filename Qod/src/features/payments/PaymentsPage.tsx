@@ -116,7 +116,7 @@ export function PaymentsPage() {
             {rows.map((payment) => {
               const order = db.orders.find((entry) => entry.id === payment.orderId);
               return (
-                <tr key={payment.id}>
+                <tr key={payment.id} className="transition-colors hover:bg-paper/45">
                   <td className="td whitespace-nowrap text-xs">{formatDateTime(payment.createdAt)}</td>
                   <td className="td text-xs">
                     {order ? (

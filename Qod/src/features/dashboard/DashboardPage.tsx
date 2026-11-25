@@ -19,22 +19,19 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { PageHeader, StatCard } from '@/components/ui/page';
+import { EmptyState, PageHeader, StatCard } from '@/components/ui/page';
 import { OrderStatusPill } from '@/components/shared/StatusPills';
 import { TableShell } from '@/components/ui/table';
 import { buttonClasses } from '@/components/ui/button';
 import { useDb, usePermission, useSession } from '@/hooks/useStore';
 import { HAS_REMOTE_API } from '@/config/brand';
-import {
-  dashboardSummary,
-  salesSeries,
-} from '@/services/reportService';
+import { dashboardSummary, salesSeries } from '@/services/reportService';
 import { listLowStock } from '@/services/live/inventoryService';
 import { customerName } from '@/services/live/customerService';
 import { orderTotals } from '@/services/orderMath';
 import { ORDER_STATUS_LABELS } from '@/services/live/orderService';
 import { formatCents } from '@/utils/money';
-import { formatDateTime, isToday } from '@/utils/date';
+import { formatDateTime } from '@/utils/date';
 
 export function DashboardPage() {
   const db = useDb();
@@ -95,7 +92,11 @@ export function DashboardPage() {
       <PageHeader
         eyebrow={`Good ${greeting()}, ${session?.name ?? 'team'}`}
         title="Bakery overview"
-        description={HAS_REMOTE_API ? 'A working view of sales, balances, production and stock, computed from the live ledger. Payments are cash-basis; orders carry their own balances.' : 'A working view of sales, balances, production and stock. Figures derive from the demo ledger — payments are cash-basis, orders carry their own balances.'}
+        description={
+          HAS_REMOTE_API
+            ? 'A working view of sales, balances, production and stock, computed from the live ledger. Payments are cash-basis; orders carry their own balances.'
+            : 'A working view of sales, balances, production and stock. Figures derive from the demo ledger — payments are cash-basis, orders carry their own balances.'
+        }
         actions={
           canUsePos ? (
             <Link to="/admin/pos" className={buttonClasses('primary', 'md')}>
@@ -157,7 +158,7 @@ export function DashboardPage() {
                 <AreaChart data={series} margin={{ top: 6, right: 6, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="collections" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3f5c35" stopOpacity={0.35} />
+                      <stop offset="0%" stopColor="#3f5c35" stopOpacity={0.32} />
                       <stop offset="100%" stopColor="#3f5c35" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
@@ -173,13 +174,19 @@ export function DashboardPage() {
                     tick={{ fontSize: 10, fill: '#7c7564' }}
                     axisLine={false}
                     tickLine={false}
-                    width={44}
+                    width={48}
                     tickFormatter={(value: number) => formatCents(value, currency, { compact: true })}
                   />
                   <Tooltip
                     formatter={(value: number) => [formatCents(value, currency), 'Collected']}
-                    labelStyle={{ fontSize: 11, color: '#49463c' }}
-                    contentStyle={{ borderRadius: 12, borderColor: '#e3dbc9', fontSize: 12 }}
+                    labelStyle={{ fontSize: 11, color: '#49463c', fontWeight: 600 }}
+                    contentStyle={{
+                      backgroundColor: '#fcfaf4',
+                      borderRadius: 12,
+                      borderColor: '#e3dbc9',
+                      fontSize: 12,
+                      boxShadow: '0 10px 25px -15px rgba(41,61,34,0.35)',
+                    }}
                   />
                   <Area
                     type="monotone"
@@ -213,7 +220,7 @@ export function DashboardPage() {
                 <li key={row.item.id} className="flex items-center justify-between gap-3 py-2.5">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-ink">{row.item.name}</p>
-                    <p className="text-[11px] text-muted">
+                    <p className="text-[11px] text-muted tabular-nums">
                       {row.total} {row.item.unit} on hand · reorder at {row.item.reorderLevel}
                     </p>
                   </div>
@@ -225,7 +232,7 @@ export function DashboardPage() {
           {canSeeProduction && (
             <Link
               to="/admin/production"
-              className="mt-4 flex items-center justify-between rounded-xl border border-line bg-paper/50 px-3.5 py-2.5 text-xs font-semibold text-forest hover:bg-paper"
+              className="mt-4 flex items-center justify-between rounded-xl border border-line bg-paper/55 px-3.5 py-2.5 text-xs font-semibold text-forest transition-colors hover:bg-paper"
             >
               Production schedule
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -243,67 +250,77 @@ export function DashboardPage() {
                 All orders
               </Link>
             </div>
-            <TableShell>
-              <table className="table-base">
-                <thead>
-                  <tr>
-                    <th className="th">Order</th>
-                    <th className="th">Customer</th>
-                    <th className="th">Status</th>
-                    <th className="th text-right">Balance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summary.recentOrders.map((order) => {
-                    const totals = orderTotals(db, order);
-                    return (
-                      <tr key={order.id} className="transition-colors hover:bg-paper/40">
-                        <td className="td">
-                          <Link to={`/admin/orders/${order.id}`} className="font-semibold text-forest hover:underline">
-                            {order.code}
-                          </Link>
-                          <p className="text-[11px] text-muted">{formatDateTime(order.createdAt)}</p>
-                        </td>
-                        <td className="td">{customerName(order.customerId)}</td>
-                        <td className="td">
-                          <OrderStatusPill status={order.status} />
-                        </td>
-                        <td className="td text-right">
-                          {order.status === 'inquiry'
-                            ? '—'
-                            : formatCents(totals.balanceCents, currency)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </TableShell>
+            {summary.recentOrders.length === 0 ? (
+              <EmptyState
+                icon={<ClipboardList className="h-5 w-5" />}
+                title="No orders yet"
+                description="Counter sales and custom enquiries will appear here as they are recorded."
+              />
+            ) : (
+              <TableShell>
+                <table className="table-base">
+                  <thead>
+                    <tr>
+                      <th className="th">Order</th>
+                      <th className="th">Customer</th>
+                      <th className="th">Status</th>
+                      <th className="th text-right">Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {summary.recentOrders.map((order) => {
+                      const totals = orderTotals(db, order);
+                      return (
+                        <tr key={order.id} className="transition-colors hover:bg-paper/45">
+                          <td className="td">
+                            <Link to={`/admin/orders/${order.id}`} className="font-semibold text-forest hover:underline">
+                              {order.code}
+                            </Link>
+                            <p className="text-[11px] text-muted">{formatDateTime(order.createdAt)}</p>
+                          </td>
+                          <td className="td">{customerName(order.customerId)}</td>
+                          <td className="td">
+                            <OrderStatusPill status={order.status} />
+                          </td>
+                          <td className="td text-right tabular-nums">
+                            {order.status === 'inquiry' ? '—' : formatCents(totals.balanceCents, currency)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </TableShell>
+            )}
           </section>
         )}
 
         <section className="card p-5">
           <h2 className="font-display text-lg text-forest-deep">Activity</h2>
-          <ul className="mt-3 space-y-3">
-            {summary.recentActivity.map((entry) => (
-              <li key={entry.id} className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-clay/70" />
-                <div>
-                  <p className="text-xs leading-relaxed text-ink-soft">{entry.message}</p>
-                  <p className="mt-0.5 text-[10px] uppercase tracking-[0.1em] text-muted">
-                    {entry.actor} · {isToday(entry.createdAt) ? formatDateTime(entry.createdAt) : formatDateTime(entry.createdAt)}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {summary.recentActivity.length === 0 ? (
+            <p className="mt-4 text-xs text-muted">No recent activity logged.</p>
+          ) : (
+            <ul className="mt-3 space-y-3">
+              {summary.recentActivity.map((entry) => (
+                <li key={entry.id} className="flex gap-3">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-clay/75" />
+                  <div>
+                    <p className="text-xs leading-relaxed text-ink-soft">{entry.message}</p>
+                    <p className="mt-0.5 text-[10px] uppercase tracking-[0.1em] text-muted">
+                      {entry.actor} · {formatDateTime(entry.createdAt)}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
 
       {canSeeOrders && (
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-6 flex flex-wrap items-center gap-2">
           <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Status key</span>
-          {Object.entries(ORDER_STATUS_LABELS).map(([status, label]) => (
+          {Object.keys(ORDER_STATUS_LABELS).map((status) => (
             <OrderStatusPill key={status} status={status as keyof typeof ORDER_STATUS_LABELS} />
           ))}
         </div>

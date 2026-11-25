@@ -1,13 +1,20 @@
-import { useState } from 'react';
-import { CheckCircle2, Clock, Mail, MapPin, Phone } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
+import { ArrowRight, CheckCircle2, Clock, Mail, MapPin, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Textarea } from '@/components/ui/field';
 import { useToast } from '@/components/ui/toast';
+import { BakeryImage } from '@/components/shared/BakeryImage';
 import { useDb } from '@/hooks/useStore';
 import { submitMessage } from '@/services/live/siteService';
 import { HAS_REMOTE_API } from '@/config/brand';
+import { EDITORIAL_MEDIA } from '@/config/media';
+import { useGsapScope } from '@/lib/gsap';
+import { formFeedbackVariants } from '@/lib/motion';
 
 export function ContactPage() {
+  const rootRef = useRef<HTMLDivElement>(null);
   const db = useDb();
   const content = db.siteContent;
   const toast = useToast();
@@ -15,7 +22,25 @@ export function ContactPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
 
-  const hasContact = Boolean(content.contactPhone || content.contactEmail || content.contactAddress || content.openingHours);
+  useGsapScope(
+    rootRef,
+    ({ gsap, reduced }) => {
+      if (reduced) return;
+      gsap.from('[data-contact-reveal]', {
+        y: 18,
+        opacity: 0,
+        duration: 0.65,
+        stagger: 0.08,
+        ease: 'power3.out',
+        clearProps: 'transform,opacity',
+      });
+    },
+    [],
+  );
+
+  const hasContact = Boolean(
+    content.contactPhone || content.contactEmail || content.contactAddress || content.openingHours,
+  );
 
   const update = (key: keyof typeof form, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -27,7 +52,9 @@ export function ContactPage() {
     try {
       await submitMessage(form);
       setSent(true);
-      toast.success(HAS_REMOTE_API ? 'Message sent to the bakery team.' : 'Message received in the demo workspace.');
+      toast.success(
+        HAS_REMOTE_API ? 'Message sent to the bakery team.' : 'Message received in the demo workspace.',
+      );
       setForm({ name: '', email: '', phone: '', subject: '', body: '' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');
@@ -43,8 +70,8 @@ export function ContactPage() {
   ];
 
   return (
-    <div className="container-page py-14 lg:py-20">
-      <div className="max-w-2xl">
+    <div ref={rootRef} className="container-page py-14 lg:py-20">
+      <div data-contact-reveal className="max-w-2xl">
         <p className="eyebrow">Contact</p>
         <h1 className="mt-3 font-display text-4xl text-forest-deep sm:text-5xl">Talk to the bakery.</h1>
         <p className="mt-4 text-sm leading-relaxed text-muted">
@@ -53,8 +80,21 @@ export function ContactPage() {
         </p>
       </div>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="space-y-5">
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+        <div data-contact-reveal className="space-y-5">
+          <div className="overflow-hidden rounded-2xl border border-line bg-cream shadow-soft">
+            <BakeryImage
+              src={EDITORIAL_MEDIA.cafeCounter.src}
+              srcSmall={EDITORIAL_MEDIA.cafeCounter.srcSmall}
+              width={EDITORIAL_MEDIA.cafeCounter.width}
+              height={EDITORIAL_MEDIA.cafeCounter.height}
+              alt={EDITORIAL_MEDIA.cafeCounter.alt}
+              sizes="(max-width: 1024px) 100vw, 44vw"
+              priority
+              className="aspect-[16/10] w-full"
+            />
+          </div>
+
           <div className="rounded-2xl border border-line bg-cream p-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Bakery channels</p>
             {hasContact ? (
@@ -75,9 +115,9 @@ export function ContactPage() {
               </ul>
             ) : (
               <div className="mt-4 rounded-xl border border-dashed border-line bg-paper/60 p-4 text-xs leading-relaxed text-muted">
-                The bakery has not published contact details yet. An administrator can add a phone number,
-                email address, address and opening hours in the BMS Website module — this page will display
-                them automatically.
+                The bakery has not published direct contact details yet. An administrator can add a phone number,
+                email address, address and opening hours in the BMS Website module — this page will display them
+                automatically.
               </div>
             )}
             <div className="mt-5 border-t border-line pt-4">
@@ -85,7 +125,7 @@ export function ContactPage() {
               <ul className="mt-2 space-y-1.5 text-sm text-ink">
                 {db.settings.locations.map((location) => (
                   <li key={location.id} className="flex items-center justify-between gap-2">
-                    <span>{location.name}</span>
+                    <span className="font-medium text-forest-deep">{location.name}</span>
                     <span className="text-xs text-muted">{location.kind}</span>
                   </li>
                 ))}
@@ -93,42 +133,75 @@ export function ContactPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-line bg-paper/60 p-5 text-xs leading-relaxed text-muted">
+          <div className="rounded-2xl border border-line bg-paper/75 p-5 text-xs leading-relaxed text-muted">
             For custom cakes and corporate orders, the{' '}
-            <a href="/custom-orders" className="font-semibold text-forest underline-offset-2 hover:underline">
-              custom-order form
-            </a>{' '}
+            <Link to="/custom-orders" className="font-semibold text-forest underline-offset-2 hover:underline">
+              custom-order form <ArrowRight className="inline h-3 w-3" />
+            </Link>{' '}
             captures the details needed for a written quotation.
           </div>
         </div>
 
-        <form onSubmit={submit} className="card p-6 sm:p-8">
-          {sent && (
-            <div className="mb-5 flex items-start gap-3 rounded-xl border border-forest/20 bg-forest-wash px-4 py-3 text-sm text-forest-deep">
-              <CheckCircle2 className="mt-0.5 h-4 w-4" />
-              <p>
-                {HAS_REMOTE_API
-                  ? 'Message received by the bakery. The team can read it in the business workspace.'
-                  : 'Message saved to the demo inbox.'}{' '}
-                Open <span className="font-semibold">BMS → Website &amp; settings → Enquiries</span> to read it.
-              </p>
-            </div>
-          )}
+        <form data-contact-reveal onSubmit={submit} className="card p-6 sm:p-8">
+          <AnimatePresence>
+            {sent && (
+              <motion.div
+                variants={formFeedbackVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="mb-5 flex items-start gap-3 overflow-hidden rounded-xl border border-forest/20 bg-forest-wash px-4 py-3 text-sm text-forest-deep"
+              >
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                <p>
+                  {HAS_REMOTE_API
+                    ? 'Message received by the bakery. The team can read it in the business workspace.'
+                    : 'Message saved to the demo inbox.'}{' '}
+                  Open <span className="font-semibold">BMS → Website &amp; settings → Enquiries</span> to read it.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Name" htmlFor="contact-name">
-              <Input id="contact-name" value={form.name} onChange={(e) => update('name', e.target.value)} required />
+              <Input
+                id="contact-name"
+                value={form.name}
+                onChange={(e) => update('name', e.target.value)}
+                required
+              />
             </Field>
             <Field label="Email" htmlFor="contact-email">
-              <Input id="contact-email" type="email" value={form.email} onChange={(e) => update('email', e.target.value)} />
+              <Input
+                id="contact-email"
+                type="email"
+                value={form.email}
+                onChange={(e) => update('email', e.target.value)}
+              />
             </Field>
             <Field label="Phone" htmlFor="contact-phone">
-              <Input id="contact-phone" value={form.phone} onChange={(e) => update('phone', e.target.value)} />
+              <Input
+                id="contact-phone"
+                value={form.phone}
+                onChange={(e) => update('phone', e.target.value)}
+              />
             </Field>
             <Field label="Subject" htmlFor="contact-subject">
-              <Input id="contact-subject" value={form.subject} onChange={(e) => update('subject', e.target.value)} required />
+              <Input
+                id="contact-subject"
+                value={form.subject}
+                onChange={(e) => update('subject', e.target.value)}
+                required
+              />
             </Field>
             <Field label="Message" htmlFor="contact-body" className="sm:col-span-2" error={error}>
-              <Textarea id="contact-body" value={form.body} onChange={(e) => update('body', e.target.value)} required />
+              <Textarea
+                id="contact-body"
+                value={form.body}
+                onChange={(e) => update('body', e.target.value)}
+                required
+              />
             </Field>
           </div>
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">

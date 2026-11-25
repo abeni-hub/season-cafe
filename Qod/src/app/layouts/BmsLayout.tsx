@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   ArrowLeftRight,
   BarChart3,
@@ -31,6 +32,7 @@ import { ROLE_LABELS, roleHasPermission, type Permission } from '@/config/permis
 import { logout } from '@/services/live/authService';
 import { cn } from '@/utils/cn';
 import { DEMO_NOTE, HAS_REMOTE_API } from '@/config/brand';
+import { fadeInVariants } from '@/lib/motion';
 
 interface NavItem {
   to: string;
@@ -93,9 +95,14 @@ export function BmsLayout() {
   const [open, setOpen] = useState(false);
   const session = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
   const db = useDb();
   const toast = useToast();
   const canViewFinance = session ? roleHasPermission(session.role, 'finance.view') : false;
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
 
   const signOut = async () => {
     try {
@@ -115,15 +122,21 @@ export function BmsLayout() {
     }))
     .filter((section) => section.items.length > 0);
 
+  const activeNav = navSections
+    .flatMap((section) => section.items.map((item) => ({ ...item, section: section.title })))
+    .find((item) =>
+      item.end ? location.pathname === item.to : location.pathname.startsWith(item.to),
+    );
+
   return (
     <div className="min-h-screen bg-paper">
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-[264px] flex-col bg-forest-deep text-cream transition-transform lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 flex w-[264px] flex-col border-r border-cream/10 bg-forest-deep text-cream transition-transform duration-200 lg:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="flex items-center justify-between px-6 py-6">
+        <div className="flex items-center justify-between border-b border-cream/10 px-6 py-5">
           <Logo invert to="/admin" compact />
           <button
             type="button"
@@ -134,10 +147,11 @@ export function BmsLayout() {
             <X className="h-5 w-5" />
           </button>
         </div>
-        <nav className="no-scrollbar flex-1 overflow-y-auto px-3 pb-4">
+
+        <nav className="no-scrollbar flex-1 overflow-y-auto px-3 py-4" aria-label="BMS navigation">
           {navSections.map((section) => (
             <div key={section.title} className="mb-5">
-              <p className="px-3 pb-2 text-[9px] font-bold uppercase tracking-[0.28em] text-cream/35">
+              <p className="px-3 pb-2 text-[9px] font-bold uppercase tracking-[0.26em] text-cream/60">
                 {section.title}
               </p>
               <ul className="space-y-0.5">
@@ -149,10 +163,10 @@ export function BmsLayout() {
                       onClick={() => setOpen(false)}
                       className={({ isActive }) =>
                         cn(
-                          'group flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors',
+                          'group flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-colors',
                           isActive
-                            ? 'bg-cream/10 text-cream'
-                            : 'text-cream/60 hover:bg-cream/5 hover:text-cream',
+                            ? 'bg-cream/12 text-cream shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                            : 'text-cream/65 hover:bg-cream/5 hover:text-cream',
                         )
                       }
                     >
@@ -160,12 +174,12 @@ export function BmsLayout() {
                         <>
                           <span
                             className={cn(
-                              'h-1 w-1 rounded-full transition-colors',
-                              isActive ? 'bg-clay' : 'bg-transparent',
+                              'h-1.5 w-1.5 rounded-full transition-colors',
+                              isActive ? 'bg-clay-soft' : 'bg-transparent',
                             )}
                           />
-                          <item.icon className="h-4 w-4" />
-                          {item.label}
+                          <item.icon className={cn('h-4 w-4 shrink-0', isActive ? 'text-cream' : 'text-cream/60')} />
+                          <span className="truncate">{item.label}</span>
                         </>
                       )}
                     </NavLink>
@@ -175,25 +189,26 @@ export function BmsLayout() {
             </div>
           ))}
         </nav>
+
         <div className="border-t border-cream/10 p-4">
           <Link
             to="/"
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-cream/55 transition-colors hover:bg-cream/5 hover:text-cream"
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-cream/60 transition-colors hover:bg-cream/5 hover:text-cream"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             View public website
           </Link>
-          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-cream/5 px-3 py-2.5">
+          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-cream/10 bg-cream/5 px-3 py-2.5">
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-cream">{session?.name}</p>
-              <p className="text-[10px] uppercase tracking-[0.14em] text-cream/40">
+              <p className="text-[10px] uppercase tracking-[0.14em] text-cream/65">
                 {session ? ROLE_LABELS[session.role] : ''}
               </p>
             </div>
             <button
               type="button"
               onClick={() => void signOut()}
-              className="rounded-lg p-1.5 text-cream/50 transition-colors hover:bg-cream/10 hover:text-cream"
+              className="rounded-lg p-1.5 text-cream/55 transition-colors hover:bg-cream/10 hover:text-cream"
               aria-label="Sign out"
             >
               <LogOut className="h-4 w-4" />
@@ -202,28 +217,43 @@ export function BmsLayout() {
         </div>
       </aside>
 
-      {open && (
-        <button
-          type="button"
-          aria-label="Close menu overlay"
-          className="fixed inset-0 z-40 bg-forest-deep/40 backdrop-blur-[1px] lg:hidden"
-          onClick={() => setOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {open && (
+          <motion.button
+            type="button"
+            aria-label="Close menu overlay"
+            variants={fadeInVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 z-40 bg-forest-deep/45 backdrop-blur-[1px] lg:hidden"
+            onClick={() => setOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       <div className="lg:pl-[264px]">
         <header className="sticky top-0 z-30 border-b border-line bg-paper/90 backdrop-blur-md">
           <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <button
                 type="button"
-                className="rounded-lg border border-line p-2 text-forest lg:hidden"
+                className="rounded-lg border border-line bg-cream p-2 text-forest lg:hidden"
                 onClick={() => setOpen(true)}
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />
               </button>
-              <div className="hidden items-center gap-2 text-[11px] font-medium text-muted sm:flex">
+              {activeNav && (
+                <div className="hidden items-center gap-2 text-xs text-muted md:flex">
+                  <span className="font-semibold uppercase tracking-[0.12em] text-muted/80">
+                    {activeNav.section}
+                  </span>
+                  <span className="text-line">/</span>
+                  <span className="font-semibold text-forest-deep">{activeNav.label}</span>
+                </div>
+              )}
+              <div className="hidden items-center gap-1.5 text-[11px] font-medium text-muted xl:flex">
                 {db.settings.locations.map((loc) => (
                   <span key={loc.id} className="rounded-full border border-line bg-cream px-2.5 py-1">
                     {loc.name}
@@ -232,6 +262,7 @@ export function BmsLayout() {
                 <span className="rounded-full border border-line bg-cream px-2.5 py-1">{db.settings.currency}</span>
               </div>
             </div>
+
             <div className="flex items-center gap-2.5">
               {!canViewFinance && (
                 <span className="hidden rounded-full border border-line bg-cream px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted sm:block">
@@ -242,7 +273,8 @@ export function BmsLayout() {
             </div>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+
+        <main className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <Outlet />
           <p className="mt-10 border-t border-line pt-4 text-[11px] leading-relaxed text-muted">
             {HAS_REMOTE_API

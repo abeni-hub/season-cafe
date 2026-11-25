@@ -16,9 +16,9 @@ export function prefersReducedMotion(): boolean {
 }
 
 /**
- * Component-scoped GSAP runner with automatic `gsap.context()` + `gsap.matchMedia()` cleanup
- * and built-in `prefers-reduced-motion` support. Prevents orphaned timelines or duplicate ScrollTriggers
- * across React Router route changes and StrictMode double-mounts.
+ * Component-scoped GSAP hook using `gsap.matchMedia()` + `gsap.context()` so every
+ * timeline and ScrollTrigger respects `prefers-reduced-motion` and cleans up cleanly
+ * on unmount or route changes without leaking triggers.
  */
 export function useGsapScope(
   scopeRef: RefObject<HTMLElement | null>,
@@ -32,7 +32,6 @@ export function useGsapScope(
     ensureGsapPlugins();
 
     const mm = gsap.matchMedia();
-    let ctx: gsap.Context | undefined;
 
     mm.add(
       {
@@ -41,12 +40,12 @@ export function useGsapScope(
       },
       (conditions) => {
         const reduced = Boolean(conditions.conditions?.reduced);
-        ctx = gsap.context(() => {
+        const ctx = gsap.context(() => {
           setup({ gsap, ScrollTrigger, reduced });
         }, root);
 
         return () => {
-          ctx?.revert();
+          ctx.revert();
         };
       },
     );
@@ -57,7 +56,6 @@ export function useGsapScope(
 
     return () => {
       window.cancelAnimationFrame(refreshId);
-      ctx?.revert();
       mm.revert();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

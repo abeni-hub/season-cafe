@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { MotionConfig } from 'motion/react';
 import { ToastProvider } from '@/components/ui/toast';
 import { RemoteBootstrap } from '@/app/RemoteBootstrap';
 import { ScrollToTop } from '@/app/ScrollToTop';
@@ -34,173 +35,175 @@ import { WebsiteCmsPage } from '@/features/website/WebsiteCmsPage';
 
 export function App() {
   return (
-    <BrowserRouter>
-      <ToastProvider>
-        <RemoteBootstrap>
-          <ScrollToTop />
-          <Routes>
-          <Route element={<SiteLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/products/:slug" element={<ProductDetailPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/custom-orders" element={<WebsiteCustomOrdersPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
+    <MotionConfig reducedMotion="user">
+      <BrowserRouter>
+        <ToastProvider>
+          <RemoteBootstrap>
+            <ScrollToTop />
+            <Routes>
+              <Route element={<SiteLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/products/:slug" element={<ProductDetailPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/gallery" element={<GalleryPage />} />
+                <Route path="/custom-orders" element={<WebsiteCustomOrdersPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
 
-          <Route path="/admin/login" element={<LoginPage />} />
+              <Route path="/admin/login" element={<LoginPage />} />
 
-          <Route
-            path="/admin"
-            element={
-              <RequireAuth>
-                <BmsLayout />
-              </RequireAuth>
-            }
-          >
-            <Route
-              index
-              element={
-                <RequirePermission permission="dashboard.view">
-                  <DashboardPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="pos"
-              element={
-                <RequirePermission permission="pos.use">
-                  <PosPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="orders"
-              element={
-                <RequirePermission permission="orders.view">
-                  <OrdersPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="orders/:orderId"
-              element={
-                <RequirePermission permission="orders.view">
-                  <OrderDetailPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="custom-orders"
-              element={
-                <RequirePermission permission="orders.view">
-                  <CustomOrdersPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="customers"
-              element={
-                <RequirePermission permission="customers.manage">
-                  <CustomersPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="payments"
-              element={
-                <RequirePermission permission="payments.view">
-                  <PaymentsPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="inventory"
-              element={
-                <RequirePermission permission="inventory.view">
-                  <InventoryPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="purchasing"
-              element={
-                <RequirePermission permission="purchasing.manage">
-                  <PurchasingPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="production"
-              element={
-                <RequirePermission permission="production.view">
-                  <ProductionPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="recipes"
-              element={
-                <RequirePermission permission="recipes.manage">
-                  <RecipesPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="transfers"
-              element={
-                <RequirePermission permission="transfers.manage">
-                  <TransfersPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="expenses"
-              element={
-                <RequirePermission permission="expenses.manage">
-                  <ExpensesPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="reports"
-              element={
-                <RequirePermission permission="reports.view">
-                  <ReportsPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="products"
-              element={
-                <RequirePermission permission="products.manage">
-                  <CataloguePage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="employees"
-              element={
-                <RequirePermission permission="employees.manage">
-                  <EmployeesPage />
-                </RequirePermission>
-              }
-            />
-            <Route
-              path="website"
-              element={
-                <RequirePermission permission="cms.manage">
-                  <WebsiteCmsPage />
-                </RequirePermission>
-              }
-            />
-            <Route path="*" element={<Navigate to="/admin" replace />} />
-          </Route>
-          </Routes>
-        </RemoteBootstrap>
-      </ToastProvider>
-    </BrowserRouter>
+              <Route
+                path="/admin"
+                element={
+                  <RequireAuth>
+                    <BmsLayout />
+                  </RequireAuth>
+                }
+              >
+                <Route
+                  index
+                  element={
+                    <RequirePermission permission="dashboard.view">
+                      <DashboardPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="pos"
+                  element={
+                    <RequirePermission permission="pos.use">
+                      <PosPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="orders"
+                  element={
+                    <RequirePermission permission="orders.view">
+                      <OrdersPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="orders/:orderId"
+                  element={
+                    <RequirePermission permission="orders.view">
+                      <OrderDetailPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="custom-orders"
+                  element={
+                    <RequirePermission permission="orders.view">
+                      <CustomOrdersPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="customers"
+                  element={
+                    <RequirePermission permission="customers.manage">
+                      <CustomersPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="payments"
+                  element={
+                    <RequirePermission permission="payments.view">
+                      <PaymentsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="inventory"
+                  element={
+                    <RequirePermission permission="inventory.view">
+                      <InventoryPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="purchasing"
+                  element={
+                    <RequirePermission permission="purchasing.manage">
+                      <PurchasingPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="production"
+                  element={
+                    <RequirePermission permission="production.view">
+                      <ProductionPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="recipes"
+                  element={
+                    <RequirePermission permission="recipes.manage">
+                      <RecipesPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="transfers"
+                  element={
+                    <RequirePermission permission="transfers.manage">
+                      <TransfersPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="expenses"
+                  element={
+                    <RequirePermission permission="expenses.manage">
+                      <ExpensesPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="reports"
+                  element={
+                    <RequirePermission permission="reports.view">
+                      <ReportsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="products"
+                  element={
+                    <RequirePermission permission="products.manage">
+                      <CataloguePage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="employees"
+                  element={
+                    <RequirePermission permission="employees.manage">
+                      <EmployeesPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="website"
+                  element={
+                    <RequirePermission permission="cms.manage">
+                      <WebsiteCmsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route path="*" element={<Navigate to="/admin" replace />} />
+              </Route>
+            </Routes>
+          </RemoteBootstrap>
+        </ToastProvider>
+      </BrowserRouter>
+    </MotionConfig>
   );
 }

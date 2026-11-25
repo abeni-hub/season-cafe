@@ -34,6 +34,14 @@ const ranges = [
   { value: 90, label: 'Last 90 days' },
 ];
 
+const tooltipBoxStyle = {
+  backgroundColor: '#fcfaf4',
+  borderRadius: 12,
+  borderColor: '#e3dbc9',
+  fontSize: 12,
+  boxShadow: '0 10px 25px -15px rgba(41,61,34,0.35)',
+};
+
 export function ReportsPage() {
   const db = useDb();
   const [days, setDays] = useState(30);
@@ -58,12 +66,18 @@ export function ReportsPage() {
       <PageHeader
         eyebrow="Finance"
         title="Reports"
-        description={HAS_REMOTE_API ? 'Actual figures from recorded transactions. Nothing here is projected or simulated — all amounts derive from the live ledger.' : 'Actual figures from recorded transactions. Nothing here is projected or simulated — all amounts derive from the demo ledger.'}
+        description={
+          HAS_REMOTE_API
+            ? 'Actual figures from recorded transactions. Nothing here is projected or simulated — all amounts derive from the live ledger.'
+            : 'Actual figures from recorded transactions. Nothing here is projected or simulated — all amounts derive from the demo ledger.'
+        }
         actions={
           <Field label="Period" htmlFor="report-range" className="w-44">
             <Select id="report-range" value={days} onChange={(e) => setDays(Number(e.target.value))}>
               {ranges.map((range) => (
-                <option key={range.value} value={range.value}>{range.label}</option>
+                <option key={range.value} value={range.value}>
+                  {range.label}
+                </option>
               ))}
             </Select>
           </Field>
@@ -71,22 +85,38 @@ export function ReportsPage() {
       />
 
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="card px-4 py-3">
+        <div className="card px-4 py-3.5">
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Collected in period</p>
-          <p className="mt-1 font-display text-xl text-forest-deep">{formatCents(collected, currency)}</p>
+          <p className="mt-1 font-display text-xl text-forest-deep tabular-nums">
+            {formatCents(collected, currency)}
+          </p>
         </div>
-        <div className="card px-4 py-3">
+        <div className="card px-4 py-3.5">
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Expenses in period</p>
-          <p className="mt-1 font-display text-xl text-clay-deep">{formatCents(expenseTotal, currency)}</p>
+          <p className="mt-1 font-display text-xl text-clay-deep tabular-nums">
+            {formatCents(expenseTotal, currency)}
+          </p>
         </div>
-        <div className="card px-4 py-3">
+        <div className="card px-4 py-3.5">
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Collections less expenses</p>
-          <p className={`mt-1 font-display text-xl ${net >= 0 ? 'text-forest-deep' : 'text-[#8d2f24]'}`}>{formatCents(net, currency)}</p>
-          <p className="mt-1 text-[10px] text-muted">Not a statutory profit figure — excludes purchase and payroll policy.</p>
+          <p
+            className={`mt-1 font-display text-xl tabular-nums ${
+              net >= 0 ? 'text-forest-deep' : 'text-[#8d2f24]'
+            }`}
+          >
+            {formatCents(net, currency)}
+          </p>
+          <p className="mt-1 text-[10px] text-muted">
+            Not a statutory profit figure — excludes purchase and payroll policy.
+          </p>
         </div>
-        <div className="card px-4 py-3">
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Outstanding customer balances</p>
-          <p className="mt-1 font-display text-xl text-forest-deep">{formatCents(summary.outstandingCents, currency)}</p>
+        <div className="card px-4 py-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
+            Outstanding customer balances
+          </p>
+          <p className="mt-1 font-display text-xl text-forest-deep tabular-nums">
+            {formatCents(summary.outstandingCents, currency)}
+          </p>
         </div>
       </div>
 
@@ -99,15 +129,37 @@ export function ReportsPage() {
               <AreaChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="reportCollections" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3f5c35" stopOpacity={0.25} />
+                    <stop offset="0%" stopColor="#3f5c35" stopOpacity={0.28} />
                     <stop offset="100%" stopColor="#3f5c35" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e3dbc9" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#7c7564' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis tickFormatter={moneyTick} tick={{ fontSize: 10, fill: '#7c7564' }} tickLine={false} axisLine={false} width={70} />
-                <Tooltip formatter={(value: number) => formatCents(Number(value), currency)} labelStyle={{ fontSize: 12 }} />
-                <Area type="monotone" dataKey="collectedCents" stroke="#3f5c35" strokeWidth={2} fill="url(#reportCollections)" />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 10, fill: '#7c7564' }}
+                  tickLine={false}
+                  axisLine={false}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  tickFormatter={moneyTick}
+                  tick={{ fontSize: 10, fill: '#7c7564' }}
+                  tickLine={false}
+                  axisLine={false}
+                  width={70}
+                />
+                <Tooltip
+                  formatter={(value: number) => formatCents(Number(value), currency)}
+                  labelStyle={{ fontSize: 11, fontWeight: 600 }}
+                  contentStyle={tooltipBoxStyle}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="collectedCents"
+                  stroke="#3f5c35"
+                  strokeWidth={2}
+                  fill="url(#reportCollections)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -122,13 +174,24 @@ export function ReportsPage() {
                 <BarChart data={expenses} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e3dbc9" vertical={false} />
                   <XAxis dataKey="category" tick={{ fontSize: 10, fill: '#7c7564' }} tickLine={false} axisLine={false} />
-                  <YAxis tickFormatter={moneyTick} tick={{ fontSize: 10, fill: '#7c7564' }} tickLine={false} axisLine={false} width={70} />
-                  <Tooltip formatter={(value: number) => formatCents(Number(value), currency)} />
+                  <YAxis
+                    tickFormatter={moneyTick}
+                    tick={{ fontSize: 10, fill: '#7c7564' }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={70}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => formatCents(Number(value), currency)}
+                    contentStyle={tooltipBoxStyle}
+                  />
                   <Bar dataKey="totalCents" fill="#b0552f" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <p className="flex h-full items-center justify-center text-xs text-muted">No expenses recorded in this period.</p>
+              <p className="flex h-full items-center justify-center rounded-xl border border-dashed border-line bg-paper/45 text-xs text-muted">
+                No expenses recorded in this period.
+              </p>
             )}
           </div>
         </div>
@@ -148,14 +211,20 @@ export function ReportsPage() {
               </thead>
               <tbody>
                 {products.map((row) => (
-                  <tr key={row.name}>
+                  <tr key={row.name} className="hover:bg-paper/45">
                     <td className="td text-xs font-medium text-ink">{row.name}</td>
-                    <td className="td text-right text-xs">{quantity(row.quantity)}</td>
-                    <td className="td text-right text-xs"><Money cents={row.revenueCents} /></td>
+                    <td className="td text-right text-xs tabular-nums">{quantity(row.quantity)}</td>
+                    <td className="td text-right text-xs tabular-nums">
+                      <Money cents={row.revenueCents} />
+                    </td>
                   </tr>
                 ))}
                 {!products.length && (
-                  <tr><td className="td text-xs text-muted" colSpan={3}>No fulfilled orders in this period.</td></tr>
+                  <tr>
+                    <td className="td text-xs text-muted" colSpan={3}>
+                      No fulfilled orders in this period.
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
@@ -175,15 +244,23 @@ export function ReportsPage() {
               </thead>
               <tbody>
                 {valuation.rows.slice(0, 6).map((row) => (
-                  <tr key={row.itemId}>
+                  <tr key={row.itemId} className="hover:bg-paper/45">
                     <td className="td text-xs font-medium text-ink">{row.name}</td>
-                    <td className="td text-right text-xs">{quantity(row.total)} {row.unit}</td>
-                    <td className="td text-right text-xs"><Money cents={row.valueCents} /></td>
+                    <td className="td text-right text-xs tabular-nums">
+                      {quantity(row.total)} {row.unit}
+                    </td>
+                    <td className="td text-right text-xs tabular-nums">
+                      <Money cents={row.valueCents} />
+                    </td>
                   </tr>
                 ))}
-                <tr className="bg-paper/60">
-                  <td className="td text-xs font-semibold" colSpan={2}>Total tracked value</td>
-                  <td className="td text-right text-xs font-semibold"><Money cents={valuation.totalCents} /></td>
+                <tr className="bg-paper/65">
+                  <td className="td text-xs font-semibold" colSpan={2}>
+                    Total tracked value
+                  </td>
+                  <td className="td text-right text-xs font-semibold tabular-nums">
+                    <Money cents={valuation.totalCents} />
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -205,14 +282,20 @@ export function ReportsPage() {
               </thead>
               <tbody>
                 {customers.map((row) => (
-                  <tr key={row.customerId}>
+                  <tr key={row.customerId} className="hover:bg-paper/45">
                     <td className="td text-xs font-medium text-ink">{row.name}</td>
-                    <td className="td text-right text-xs">{row.openOrders}</td>
-                    <td className="td text-right text-xs"><Money cents={row.balanceCents} /></td>
+                    <td className="td text-right text-xs tabular-nums">{row.openOrders}</td>
+                    <td className="td text-right text-xs tabular-nums">
+                      <Money cents={row.balanceCents} />
+                    </td>
                   </tr>
                 ))}
                 {!customers.length && (
-                  <tr><td className="td text-xs text-muted" colSpan={3}>No outstanding customer balances.</td></tr>
+                  <tr>
+                    <td className="td text-xs text-muted" colSpan={3}>
+                      No outstanding customer balances.
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
@@ -232,14 +315,22 @@ export function ReportsPage() {
               </thead>
               <tbody>
                 {suppliers.map((row) => (
-                  <tr key={row.supplier.id}>
+                  <tr key={row.supplier.id} className="hover:bg-paper/45">
                     <td className="td text-xs font-medium text-ink">{row.supplier.name}</td>
-                    <td className="td text-right text-xs"><Money cents={row.receivedCents} /></td>
-                    <td className="td text-right text-xs"><Money cents={row.balanceCents} /></td>
+                    <td className="td text-right text-xs tabular-nums">
+                      <Money cents={row.receivedCents} />
+                    </td>
+                    <td className="td text-right text-xs tabular-nums">
+                      <Money cents={row.balanceCents} />
+                    </td>
                   </tr>
                 ))}
                 {!suppliers.length && (
-                  <tr><td className="td text-xs text-muted" colSpan={3}>No suppliers recorded.</td></tr>
+                  <tr>
+                    <td className="td text-xs text-muted" colSpan={3}>
+                      No suppliers recorded.
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>

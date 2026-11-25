@@ -249,7 +249,7 @@ export function PurchasingPage() {
                 const supplier = suppliers.find((entry) => entry.id === order.supplierId);
                 const status = poLabels[order.status];
                 return (
-                  <tr key={order.id}>
+                  <tr key={order.id} className="transition-colors hover:bg-paper/45">
                     <td className="td font-medium text-ink">{order.code}</td>
                     <td className="td text-xs">{supplier?.name ?? '—'}</td>
                     <td className="td text-xs">{formatDate(order.createdAt)}</td>
@@ -393,8 +393,8 @@ export function PurchasingPage() {
             <p className="field-label">Order lines</p>
             <div className="space-y-2">
               {draft.lines.map((line, index) => (
-                <div key={index} className="grid grid-cols-12 gap-2">
-                  <div className="col-span-6">
+                <div key={index} className="grid grid-cols-1 gap-2 rounded-xl border border-line/70 bg-paper/35 p-2.5 sm:grid-cols-12 sm:border-0 sm:bg-transparent sm:p-0">
+                  <div className="sm:col-span-6">
                     <Select
                       aria-label={`Line ${index + 1} item`}
                       value={line.itemId}
@@ -415,48 +415,50 @@ export function PurchasingPage() {
                       ))}
                     </Select>
                   </div>
-                  <div className="col-span-2">
-                    <Input
-                      aria-label={`Line ${index + 1} quantity`}
-                      inputMode="decimal"
-                      placeholder="Qty"
-                      value={line.quantity}
-                      onChange={(e) =>
-                        setDraft((current) => ({
-                          ...current,
-                          lines: current.lines.map((entry, i) => (i === index ? { ...entry, quantity: e.target.value } : entry)),
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="col-span-3">
-                    <Input
-                      aria-label={`Line ${index + 1} unit cost`}
-                      inputMode="decimal"
-                      placeholder="Unit cost"
-                      value={line.cost}
-                      onChange={(e) =>
-                        setDraft((current) => ({
-                          ...current,
-                          lines: current.lines.map((entry, i) => (i === index ? { ...entry, cost: e.target.value } : entry)),
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="col-span-1 flex items-center justify-end">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      aria-label="Remove line"
-                      onClick={() =>
-                        setDraft((current) => ({
-                          ...current,
-                          lines: current.lines.length > 1 ? current.lines.filter((_, i) => i !== index) : current.lines,
-                        }))
-                      }
-                    >
-                      ×
-                    </Button>
+                  <div className="grid grid-cols-[1fr_1fr_auto] gap-2 sm:contents">
+                    <div className="sm:col-span-2">
+                      <Input
+                        aria-label={`Line ${index + 1} quantity`}
+                        inputMode="decimal"
+                        placeholder="Qty"
+                        value={line.quantity}
+                        onChange={(e) =>
+                          setDraft((current) => ({
+                            ...current,
+                            lines: current.lines.map((entry, i) => (i === index ? { ...entry, quantity: e.target.value } : entry)),
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="sm:col-span-3">
+                      <Input
+                        aria-label={`Line ${index + 1} unit cost`}
+                        inputMode="decimal"
+                        placeholder="Unit cost"
+                        value={line.cost}
+                        onChange={(e) =>
+                          setDraft((current) => ({
+                            ...current,
+                            lines: current.lines.map((entry, i) => (i === index ? { ...entry, cost: e.target.value } : entry)),
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-end sm:col-span-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Remove line"
+                        onClick={() =>
+                          setDraft((current) => ({
+                            ...current,
+                            lines: current.lines.length > 1 ? current.lines.filter((_, i) => i !== index) : current.lines,
+                          }))
+                        }
+                      >
+                        ×
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
