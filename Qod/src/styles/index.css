@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+  }
+
+  ::selection {
+    @apply bg-forest/20;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-forest/40 ring-offset-2 ring-offset-cream;
+  }
+
+  input[type='date']::-webkit-calendar-picker-indicator {
+    opacity: 0.5;
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-clay;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.1em] text-muted;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-line bg-white/80 px-3.5 py-2.5 text-sm text-ink shadow-sm placeholder:text-muted/60 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest/15 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .table-base {
+    @apply w-full text-left text-sm;
+  }
+
+  .th {
+    @apply whitespace-nowrap border-b border-line bg-paper/60 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-muted;
+  }
+
+  .td {
+    @apply border-b border-line/60 px-4 py-3.5 align-middle text-ink-soft;
+  }
+
+  .card {
+    @apply rounded-2xl border border-line bg-cream shadow-[0_1px_0_rgba(38,37,31,0.03)];
+  }
+
+  .link-underline {
+    @apply relative inline-flex items-center gap-1.5 text-sm font-semibold text-forest after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-clay after:transition-transform hover:after:scale-x-100;
+  }
+}
+
+@layer utilities {
+  .botanical-paper {
+    background-image:
+      radial-gradient(circle at 6% 12%, rgba(176, 85, 47, 0.07), transparent 30%),
+      radial-gradient(circle at 94% 4%, rgba(63, 92, 53, 0.09), transparent 32%),
+      radial-gradient(circle at 72% 96%, rgba(211, 202, 181, 0.3), transparent 38%);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
