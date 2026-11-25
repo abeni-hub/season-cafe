@@ -1,0 +1,18 @@
+# ==============================================================================
+# SEASONS CAKE — cPanel Apache .htaccess (BMS Portal: public_html/bms)
+# ==============================================================================
+# Handles:
+# 1. BMS Client-Side React Router (index.html fallback for /bms/orders, /bms/sales, etc.)
+# 2. Assets caching
+# ==============================================================================
+
+RewriteEngine On
+RewriteBase /bms/
+
+# If file or directory exists, serve directly (e.g. assets/*.js, assets/*.css, logo.svg)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ - [L]
+
+# Otherwise, route all deep links (/bms/orders, /bms/pos, /bms/production) to index.html
+RewriteRule ^ index.html [L]

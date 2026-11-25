@@ -1,0 +1,159 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: season_cake
+      POSTGRES_USER: season_cake
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-compose-password}
+    volumes:
+      - season-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U season_cake -d season_cake"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-local-compose-only-key}
+      DJANGO_DEBUG: "true"
+      DJANGO_ALLOWED_HOSTS: localhost,bms.localhost,127.0.0.1
+      DJANGO_SECURE_SSL_REDIRECT: "false"
+      DATABASE_URL: postgresql://season_cake:${POSTGRES_PASSWORD:-local-compose-password}@db:5432/season_cake
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "8000"
+    command:
+      - sh
+      - -c
+      - python manage.py collectstatic --noinput && gunicorn season_api.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60
+    volumes:
+      - season-media:/app/media
+      - season-static:/app/staticfiles
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready/', timeout=3)
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  worker:
+    build:
+      context: ./backend
+    command: ["celery", "-A", "season_api", "worker", "--loglevel=INFO"]
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-local-compose-only-key}
+      DJANGO_DEBUG: "true"
+      DATABASE_URL: postgresql://season_cake:${POSTGRES_PASSWORD:-local-compose-password}@db:5432/season_cake
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  beat:
+    build:
+      context: ./backend
+    command: ["celery", "-A", "season_api", "beat", "--loglevel=INFO"]
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-local-compose-only-key}
+      DJANGO_DEBUG: "true"
+      DATABASE_URL: postgresql://season_cake:${POSTGRES_PASSWORD:-local-compose-password}@db:5432/season_cake
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  backup:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backup
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: season_cake
+      PGPASSWORD: ${POSTGRES_PASSWORD:-local-compose-password}
+      PGDATABASE: season_cake
+      AGE_RECIPIENT: ${BACKUP_AGE_RECIPIENT:-}
+      BACKUP_DIRECTORY: /backups
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
+    volumes:
+      - season-backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+
+  bms-portal:
+    build:
+      context: ./bms-frontend
+    environment:
+      API_PROXY_TARGET: http://api:8000
+    expose:
+      - "5174"
+
+  public-website:
+    build:
+      context: .
+      dockerfile: Dockerfile.public
+    environment:
+      API_PROXY_TARGET: http://api:8000
+    expose:
+      - "5173"
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    environment:
+      NGINX_ENVSUBST_FILTER: "^NEVER_SUBSTITUTE$"
+    volumes:
+      - ./infra/nginx.conf:/etc/nginx/templates/default.conf.template:ro
+      - season-static:/var/www/static:ro
+    depends_on:
+      api:
+        condition: service_healthy
+      bms-portal:
+        condition: service_started
+      public-website:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  season-postgres:
+  season-media:
+  season-static:
+  season-backups:
